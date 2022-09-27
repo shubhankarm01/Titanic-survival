@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: titanic-survival
+Version: 0.0.0
+Summary: Titanic survival classification model
+Author: Shubhankar_Mishra
+Requires-Python: >=3.7.0
+Description-Content-Type: text/markdown
+
+Titanic survival classification model

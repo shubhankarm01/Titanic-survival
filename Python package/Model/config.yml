@@ -1,0 +1,52 @@
+# Data files
+raw_data_file: raw.csv
+
+# Variables:
+
+## Dependent variable
+target: survived
+
+## Independent variables
+features:
+ - pclass
+ - sex
+ - age
+ - sibsp
+ - parch
+ - fare
+ - cabin
+ - embarked
+ - title
+
+## Unused variables
+unused_fields:
+ - name
+ - ticket
+ - boat
+ - body
+ - home.dest
+
+numerical_vars:
+ - pclass
+ - age
+ - sibsp
+ - parch
+ - fare
+
+categorical_vars:
+ - sex
+ - cabin
+ - embarked
+ - title
+
+cabin_vars:
+ - cabin
+
+# train-test split ratio
+test_size: 0.1
+
+# random seed for train-test split
+random_state: 0
+
+pipeline_name: titanic_classification_model
+pipeline_save_file: titanic_classification_model_output
