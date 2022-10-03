@@ -1,0 +1,88 @@
+version: 2
+
+defaults: &defaults
+    docker:
+        - image: circleci/python:3.9.7
+    working_directory: ~/project
+
+prepare_tox: &prepare_tox
+    run:
+        name: Install tox
+        command: |
+            sudo pip install --upgrade pip
+            pip install --user tox
+            
+heroku_login: &heroku_login
+    run:
+        name: heroku login
+        command: |
+            HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:login
+
+jobs:
+    test_app:
+        <<: *defaults
+        working_directory: ~/project/Titanic-survival/App
+        steps:
+            - checkout:
+                path: ~/project/Titanic-survival
+            - *prepare_tox
+            - run:
+                name: Running app tests
+                command: |
+                    dir
+                    tox
+    
+    deploy_app_to_heroku:
+        <<: *defaults
+        working_directory: ~/project/Titanic-survival
+        steps:
+            - checkout:
+                path: ~/project/Titanic-survival
+            - run:
+                name: Deploy to Heroku
+                command: |
+                    
+                    git subtree push --prefix App https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
+                    
+    deploy_app_container_to_heroku:
+        <<: *defaults
+        steps:
+            - setup_remote_docker:
+                version: 20.10.6
+            - checkout:
+                path: ~/project/Titanic-survival
+            - run:
+                name: Build image
+                command: |
+                    sudo curl https://cli-assets.heroku.com/install.sh | sh
+                    HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:login
+                    cd Titanic-survival
+                    docker build -t registry.heroku.com/${HEROKU_APP_NAME}/web .
+            - run:
+                name: Push image to Heroku
+                command: |
+                    HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:login
+                    docker push registry.heroku.com/${HEROKU_APP_NAME}/web
+            - run:
+                name: Release to Heroku
+                command: |
+                    HEROKU_API_KEY=${HEROKU_API_KEY} heroku container:login
+                    heroku container:release web --app ${HEROKU_APP_NAME}
+                
+        
+workflows:
+    version: 2
+    Titanic-survival:
+        jobs:
+            - deploy_app_container_to_heroku     
+            
+# workflows:
+#     version: 2
+#     Titanic-survival:
+#         jobs:
+#             - test_app
+#             - deploy_app_to_heroku:
+#                 requires:
+#                     - test_app 
+                    
+            
